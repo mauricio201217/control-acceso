@@ -1,10 +1,9 @@
 import pandas as pd
 import requests
 from openpyxl import Workbook, load_workbook
-from openpyxl.worksheet.table import Table
 import os
 
-# URL del archivo de control de acceso (en formato raw)
+# URL del archivo de control de acceso en GitHub
 url = "https://raw.githubusercontent.com/mauricio201217/control-acceso/main/acceso.txt"
 
 def comprobar_acceso(): 
@@ -13,15 +12,14 @@ def comprobar_acceso():
     Si el archivo contiene 'DENEGADO', bloquea el acceso.
     """
     try:
-        # Obtener el contenido del archivo de acceso
-        response = requests.get(url)
+        # Obtener el contenido del archivo de acceso desde GitHub
+        response = requests.get(url, timeout=10)  # Asegúrate de usar el parámetro timeout
         
         if response.status_code == 200:
             estado_acceso = response.text.strip()  # Eliminar espacios en blanco
 
             if estado_acceso == "DENEGADO":
                 print("Acceso denegado.")
-                # Puedes agregar aquí cualquier código para bloquear el acceso
                 return False
             elif estado_acceso == "PERMITIDO":
                 print("Acceso permitido.")
@@ -30,12 +28,13 @@ def comprobar_acceso():
                 print("Estado de acceso desconocido.")
                 return False
         else:
-            print("Error al obtener el archivo de acceso.")
+            print(f"Error al obtener el archivo de acceso (Status: {response.status_code}).")
             return False
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         print(f"Error al conectar: {e}")
         return False
 
+# Resto del código donde procesas los datos
 def cargar_datos():
     """
     Función para cargar un archivo .txt, procesarlo y convertirlo a un archivo de Excel.
@@ -73,10 +72,8 @@ def crear_tabla_dinamica():
     wb = load_workbook(archivo_excel)
     ws = wb.active
 
-    # Crear la tabla
-    tabla_dinamica = Table(displayName="TablaDinamica", ref=ws.dimensions)
-    ws.add_table(tabla_dinamica)
-    
+    # Crear la tabla dinámica
+    tabla_dinamica = ws.tables.add('TablaDinamica', range(ws.dimensions))
     print("Tabla dinámica creada correctamente.")
     
     # Guardar el archivo con la tabla dinámica
