@@ -1,1 +1,1 @@
-permitido
+denegado
