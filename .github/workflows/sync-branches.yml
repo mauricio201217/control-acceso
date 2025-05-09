@@ -1,0 +1,34 @@
+name: Sincronizar ramas automáticamente
+
+on:
+  push:
+    branches:
+      - principal
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar el repositorio completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Fusionar en maestro
+        run: |
+          git checkout maestro
+          git merge origin/principal --no-edit
+          git push origin maestro
+
+      - name: Fusionar en mauricio201217-parche-1
+        run: |
+          git checkout mauricio201217-parche-1
+          git merge origin/principal --no-edit
+          git push origin mauricio201217-parche-1
